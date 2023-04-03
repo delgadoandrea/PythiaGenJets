@@ -38,7 +38,7 @@ protected :
 };
 
 int main(int argc, char ** argv) {
-
+  std::cout<< "Making sure its changing " << std::endl;
   if ( argc < 4 ) {
     std::cout << "usage: " << argv[0] << " config_file root_file n_events <optional: seed (-1 = default, 0=use time, or input your own)> <optional: ptcut>" << std::endl;
     return 0;
@@ -49,7 +49,7 @@ int main(int argc, char ** argv) {
   double R = 0.8, ptmin = 30.0, lepfrac = 0.9;
   fastjet::JetDefinition jet_def(fastjet::antikt_algorithm, R);
 
-  bool verbose = false;
+  bool verbose = true;
 
   char * configfile = argv[1];
   char * outfile = argv[2];
@@ -83,6 +83,9 @@ int main(int argc, char ** argv) {
   }
   pythia.init();
 
+  Thrust thr;
+  Hist thrust("thrust", 100, 0.5, 1.);
+
   // Set up the ROOT TFile and TTree.
   TFile *file = TFile::Open(outfile,"recreate");
   Event *event = &pythia.event;
@@ -97,22 +100,24 @@ int main(int argc, char ** argv) {
   Float_t jet_phi[kMaxJet];
   Float_t jet_m[kMaxJet];
   Float_t jet_msd[kMaxJet];
-  Float_t jet_tau1   [kMaxJet][kMaxNsjBeta];
-  Float_t jet_tau2   [kMaxJet][kMaxNsjBeta];
-  Float_t jet_tau3   [kMaxJet][kMaxNsjBeta];
-  Float_t jet_tau4   [kMaxJet][kMaxNsjBeta];
-  Float_t jet_tau5   [kMaxJet][kMaxNsjBeta];
-  Float_t jet_tau6   [kMaxJet][kMaxNsjBeta];
-  Float_t jet_tau7   [kMaxJet][kMaxNsjBeta];
-  Float_t jet_tau8   [kMaxJet][kMaxNsjBeta];
-  Float_t jet_tau1_sd[kMaxJet][kMaxNsjBeta];
-  Float_t jet_tau2_sd[kMaxJet][kMaxNsjBeta];
-  Float_t jet_tau3_sd[kMaxJet][kMaxNsjBeta];
-  Float_t jet_tau4_sd[kMaxJet][kMaxNsjBeta];
-  Float_t jet_tau5_sd[kMaxJet][kMaxNsjBeta];
-  Float_t jet_tau6_sd[kMaxJet][kMaxNsjBeta];
-  Float_t jet_tau7_sd[kMaxJet][kMaxNsjBeta];
-  Float_t jet_tau8_sd[kMaxJet][kMaxNsjBeta];
+  Float_t tAxis = 0;
+  Float_t pZ[kMaxJet];
+  // Float_t jet_tau1   [kMaxJet][kMaxNsjBeta];
+  // Float_t jet_tau2   [kMaxJet][kMaxNsjBeta];
+  // Float_t jet_tau3   [kMaxJet][kMaxNsjBeta];
+  // Float_t jet_tau4   [kMaxJet][kMaxNsjBeta];
+  // Float_t jet_tau5   [kMaxJet][kMaxNsjBeta];
+  // Float_t jet_tau6   [kMaxJet][kMaxNsjBeta];
+  // Float_t jet_tau7   [kMaxJet][kMaxNsjBeta];
+  // Float_t jet_tau8   [kMaxJet][kMaxNsjBeta];
+  // Float_t jet_tau1_sd[kMaxJet][kMaxNsjBeta];
+  // Float_t jet_tau2_sd[kMaxJet][kMaxNsjBeta];
+  // Float_t jet_tau3_sd[kMaxJet][kMaxNsjBeta];
+  // Float_t jet_tau4_sd[kMaxJet][kMaxNsjBeta];
+  // Float_t jet_tau5_sd[kMaxJet][kMaxNsjBeta];
+  // Float_t jet_tau6_sd[kMaxJet][kMaxNsjBeta];
+  // Float_t jet_tau7_sd[kMaxJet][kMaxNsjBeta];
+  // Float_t jet_tau8_sd[kMaxJet][kMaxNsjBeta];
 
 
   
@@ -176,22 +181,24 @@ int main(int argc, char ** argv) {
   T->Branch("jet_phi", &jet_phi, "jet_phi[nJet]/F");
   T->Branch("jet_m",   &jet_m,   "jet_m[nJet]/F");
   T->Branch("jet_msd",   &jet_msd,   "jet_msd[nJet]/F");
-  T->Branch("jet_tau1",   &jet_tau1,   "jet_tau1[nJet][4]/F");
-  T->Branch("jet_tau2",   &jet_tau2,   "jet_tau2[nJet][4]/F");
-  T->Branch("jet_tau3",   &jet_tau3,   "jet_tau3[nJet][4]/F");
-  T->Branch("jet_tau4",   &jet_tau4,   "jet_tau4[nJet][4]/F");
-  T->Branch("jet_tau5",   &jet_tau5,   "jet_tau5[nJet][4]/F");
-  T->Branch("jet_tau6",   &jet_tau6,   "jet_tau6[nJet][4]/F");
-  T->Branch("jet_tau7",   &jet_tau7,   "jet_tau7[nJet][4]/F");
-  T->Branch("jet_tau8",   &jet_tau8,   "jet_tau8[nJet][4]/F");
-  T->Branch("jet_tau1_sd",   &jet_tau1_sd,   "jet_tau1_sd[nJet][4]/F");
-  T->Branch("jet_tau2_sd",   &jet_tau2_sd,   "jet_tau2_sd[nJet][4]/F");
-  T->Branch("jet_tau3_sd",   &jet_tau3_sd,   "jet_tau3_sd[nJet][4]/F");
-  T->Branch("jet_tau4_sd",   &jet_tau4_sd,   "jet_tau4_sd[nJet][4]/F");
-  T->Branch("jet_tau5_sd",   &jet_tau5_sd,   "jet_tau5_sd[nJet][4]/F");
-  T->Branch("jet_tau6_sd",   &jet_tau6_sd,   "jet_tau6_sd[nJet][4]/F");
-  T->Branch("jet_tau7_sd",   &jet_tau7_sd,   "jet_tau7_sd[nJet][4]/F");
-  T->Branch("jet_tau8_sd",   &jet_tau8_sd,   "jet_tau8_sd[nJet][4]/F");
+  T->Branch("tAxis",   &tAxis,   "tAxis/F");
+  T->Branch("pZ",   &pZ,   "pZ[nJet]/F");
+  // T->Branch("jet_tau1",   &jet_tau1,   "jet_tau1[nJet][4]/F");
+  // T->Branch("jet_tau2",   &jet_tau2,   "jet_tau2[nJet][4]/F");
+  // T->Branch("jet_tau3",   &jet_tau3,   "jet_tau3[nJet][4]/F");
+  // T->Branch("jet_tau4",   &jet_tau4,   "jet_tau4[nJet][4]/F");
+  // T->Branch("jet_tau5",   &jet_tau5,   "jet_tau5[nJet][4]/F");
+  // T->Branch("jet_tau6",   &jet_tau6,   "jet_tau6[nJet][4]/F");
+  // T->Branch("jet_tau7",   &jet_tau7,   "jet_tau7[nJet][4]/F");
+  // T->Branch("jet_tau8",   &jet_tau8,   "jet_tau8[nJet][4]/F");
+  // T->Branch("jet_tau1_sd",   &jet_tau1_sd,   "jet_tau1_sd[nJet][4]/F");
+  // T->Branch("jet_tau2_sd",   &jet_tau2_sd,   "jet_tau2_sd[nJet][4]/F");
+  // T->Branch("jet_tau3_sd",   &jet_tau3_sd,   "jet_tau3_sd[nJet][4]/F");
+  // T->Branch("jet_tau4_sd",   &jet_tau4_sd,   "jet_tau4_sd[nJet][4]/F");
+  // T->Branch("jet_tau5_sd",   &jet_tau5_sd,   "jet_tau5_sd[nJet][4]/F");
+  // T->Branch("jet_tau6_sd",   &jet_tau6_sd,   "jet_tau6_sd[nJet][4]/F");
+  // T->Branch("jet_tau7_sd",   &jet_tau7_sd,   "jet_tau7_sd[nJet][4]/F");
+  // T->Branch("jet_tau8_sd",   &jet_tau8_sd,   "jet_tau8_sd[nJet][4]/F");
   T->Branch("jet_nc",  &jet_nc,  "jet_nc[nJet]/I");
   T->Branch("jet_ic",  &jet_ic,  "jet_ic[nJet][50]/I");
   T->Branch("jet_nsubjet",  &jet_nsubjet,  "jet_nsubjet[nJet]/I");
@@ -246,6 +253,7 @@ int main(int argc, char ** argv) {
   
  // Begin event loop. Generate event; skip if generation aborted.
   for (int iEvent = 0; iEvent < nEvents; ++iEvent) {
+    std::cout << "Test" << std::endl;
     eventNum = iEvent; 
     nConstituent = nGen = nJet = 0;
     if (!pythia.next()) continue;
@@ -257,23 +265,37 @@ int main(int argc, char ** argv) {
     for ( auto x : jet_m ) x=0.0;
     for ( auto x : jet_msd ) x=0.0;
 
+    if (thr.analyze( pythia.event )) {
+      if (iEvent < 3) thr.list();
+      thrust.fill( thr.thrust() );
+      tAxis = thr.eventAxis(1).pz();
+      if ( abs(thr.eventAxis(1).pAbs() - 1.) > 1e-8
+        || abs(thr.eventAxis(2).pAbs() - 1.) > 1e-8
+        || abs(thr.eventAxis(3).pAbs() - 1.) > 1e-8
+        || abs(thr.eventAxis(1) * thr.eventAxis(2)) > 1e-8
+        || abs(thr.eventAxis(1) * thr.eventAxis(3)) > 1e-8
+        || abs(thr.eventAxis(2) * thr.eventAxis(3)) > 1e-8 ) {
+        cout << " suspicious Thrust eigenvectors " << endl;
+        thr.list();
+      }
+    }
 
-    for ( auto x : jet_tau1    ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
-    for ( auto x : jet_tau2    ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
-    for ( auto x : jet_tau3    ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
-    for ( auto x : jet_tau4    ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
-    for ( auto x : jet_tau5    ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
-    for ( auto x : jet_tau6    ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
-    for ( auto x : jet_tau7    ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
-    for ( auto x : jet_tau8    ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
-    for ( auto x : jet_tau1_sd ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
-    for ( auto x : jet_tau2_sd ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
-    for ( auto x : jet_tau3_sd ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
-    for ( auto x : jet_tau4_sd ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
-    for ( auto x : jet_tau5_sd ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
-    for ( auto x : jet_tau6_sd ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
-    for ( auto x : jet_tau7_sd ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
-    for ( auto x : jet_tau8_sd ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
+    // for ( auto x : jet_tau1    ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
+    // for ( auto x : jet_tau2    ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
+    // for ( auto x : jet_tau3    ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
+    // for ( auto x : jet_tau4    ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
+    // for ( auto x : jet_tau5    ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
+    // for ( auto x : jet_tau6    ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
+    // for ( auto x : jet_tau7    ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
+    // for ( auto x : jet_tau8    ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
+    // for ( auto x : jet_tau1_sd ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
+    // for ( auto x : jet_tau2_sd ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
+    // for ( auto x : jet_tau3_sd ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
+    // for ( auto x : jet_tau4_sd ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
+    // for ( auto x : jet_tau5_sd ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
+    // for ( auto x : jet_tau6_sd ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
+    // for ( auto x : jet_tau7_sd ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
+    // for ( auto x : jet_tau8_sd ) for ( unsigned int j = 0; j < kMaxNsjBeta; ++j )  x[j]=0.0;
     for ( auto x : jet_nc ) x=0;
     for ( auto x : jet_nsubjet ) x=0;
     for ( auto i = 0; i < kMaxJet; ++i )
@@ -443,6 +465,7 @@ int main(int argc, char ** argv) {
 	  jet_phi[nJet]=ijet->phi();
 	  jet_m[nJet]=ijet->m();	  
 	  jet_msd[nJet] = sd_jet.m();
+    pZ[nJet] = ijet->pz();
 
 	  if ( nJet < 20 ) { //N-jettiness is hard-coded to only allow up to 20 jets
 
@@ -463,23 +486,23 @@ int main(int argc, char ** argv) {
 	      fastjet::contrib::Nsubjettiness nSub7_beta1(7, fastjet::contrib::OnePass_WTA_KT_Axes(), fastjet::contrib::UnnormalizedMeasure(beta_nsj));
 	      fastjet::contrib::Nsubjettiness nSub8_beta1(8, fastjet::contrib::OnePass_WTA_KT_Axes(), fastjet::contrib::UnnormalizedMeasure(beta_nsj));
 
-	      jet_tau1[nJet][nsj_index] = nSub1_beta1(*ijet);
-	      jet_tau2[nJet][nsj_index] = nSub2_beta1(*ijet);
-	      jet_tau3[nJet][nsj_index] = nSub3_beta1(*ijet);
-	      jet_tau4[nJet][nsj_index] = nSub4_beta1(*ijet);
-	      jet_tau5[nJet][nsj_index] = nSub5_beta1(*ijet);
-	      jet_tau6[nJet][nsj_index] = nSub6_beta1(*ijet);
-	      jet_tau7[nJet][nsj_index] = nSub7_beta1(*ijet);
-	      jet_tau8[nJet][nsj_index] = nSub8_beta1(*ijet);
+	      // jet_tau1[nJet][nsj_index] = nSub1_beta1(*ijet);
+	      // jet_tau2[nJet][nsj_index] = nSub2_beta1(*ijet);
+	      // jet_tau3[nJet][nsj_index] = nSub3_beta1(*ijet);
+	      // jet_tau4[nJet][nsj_index] = nSub4_beta1(*ijet);
+	      // jet_tau5[nJet][nsj_index] = nSub5_beta1(*ijet);
+	      // jet_tau6[nJet][nsj_index] = nSub6_beta1(*ijet);
+	      // jet_tau7[nJet][nsj_index] = nSub7_beta1(*ijet);
+	      // jet_tau8[nJet][nsj_index] = nSub8_beta1(*ijet);
 
-	      jet_tau1_sd[nJet][nsj_index] = nSub1_beta1(sd_jet);
-	      jet_tau2_sd[nJet][nsj_index] = nSub2_beta1(sd_jet);
-	      jet_tau3_sd[nJet][nsj_index] = nSub3_beta1(sd_jet);
-	      jet_tau4_sd[nJet][nsj_index] = nSub4_beta1(sd_jet);
-	      jet_tau5_sd[nJet][nsj_index] = nSub5_beta1(sd_jet);
-	      jet_tau6_sd[nJet][nsj_index] = nSub6_beta1(sd_jet);
-	      jet_tau7_sd[nJet][nsj_index] = nSub7_beta1(sd_jet);
-	      jet_tau8_sd[nJet][nsj_index] = nSub8_beta1(sd_jet);
+	      // jet_tau1_sd[nJet][nsj_index] = nSub1_beta1(sd_jet);
+	      // jet_tau2_sd[nJet][nsj_index] = nSub2_beta1(sd_jet);
+	      // jet_tau3_sd[nJet][nsj_index] = nSub3_beta1(sd_jet);
+	      // jet_tau4_sd[nJet][nsj_index] = nSub4_beta1(sd_jet);
+	      // jet_tau5_sd[nJet][nsj_index] = nSub5_beta1(sd_jet);
+	      // jet_tau6_sd[nJet][nsj_index] = nSub6_beta1(sd_jet);
+	      // jet_tau7_sd[nJet][nsj_index] = nSub7_beta1(sd_jet);
+	      // jet_tau8_sd[nJet][nsj_index] = nSub8_beta1(sd_jet);
 	    }
 
 	  }
@@ -552,7 +575,7 @@ int main(int argc, char ** argv) {
 
   // Statistics on event generation.
   pythia.stat();
-
+  cout << thrust;
   //  Write tree.
   T->Write();
   file->Close();
